@@ -1,0 +1,49 @@
+name: seneschal
+version: 0.0.0.1
+synopsis: A simple tool to run shell invocations in parallel
+description: |
+  Seneschal is written to solve the perennial ops problem - "why are we running
+  this serially, when we could run it in parallel?"
+
+  Often this is a valid complaint, and a place where there's significant
+  opportunity for reducing time spent in whatever task is being scripted,
+  whether it's updating a set of git repos, or pushing up images to ECR.
+
+  Why use this, instead of `xargs --max-procs 0`, or GNU Parallel? Well, xargs
+  takes some careful arrangement to use correctly, and GNU Parallel is very
+  opinionated about... many things. The objective of this tool is to get out of
+  your way and get you back to solving other problems.
+
+stability: experimental
+license: MIT
+license-file: LICENSE
+author: Adam McCullough <merlinfmct87@gmail.com>
+maintainer: Adam McCullough <merlinfmct87@gmail.com>
+copyright: © 2021
+tested-with: GHC == 8.10.5
+category: System
+ghc-options: -Wall -Wwarn -fwarn-tabs
+github: TheWizardTower/seneschal
+
+dependencies:
+ - base >= 4.11 && < 5
+ - async
+ - process
+
+library:
+  source-dirs: lib
+
+
+executables:
+  seneschal:
+    main: Main.hs
+    source-dirs: src
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - async
+      - process
+      - seneschal
+    other-modules: []
