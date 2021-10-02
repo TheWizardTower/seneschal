@@ -2,13 +2,15 @@
 
 module Main where
 
-import Seneschal ( runShellCommandInParallel )
-import Prelude (IO, putStrLn)
+import Core.Program (None, Program, execute, write)
+import Seneschal (runShellCommandInParallel)
+import Prelude (IO)
 
 main :: IO ()
-main = do
-    putStrLn "Beginning"
-    putStrLn ""
+main = execute program
+
+program :: Program None ()
+program = do
+    write "Beginning"
+    write ""
     runShellCommandInParallel ["echo 'Hello!'", "seq 1 10", "pwd", "ping -c 5 gog.com"]
-
-
