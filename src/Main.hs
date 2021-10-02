@@ -20,7 +20,8 @@ import Core.Program (
     simpleConfig,
  )
 import Core.System (stdin)
-import Core.Text (Rope, breakLines, emptyRope, intoRope, quote)
+import Core.Text (Rope, breakLines, emptyRope, fromRope, intoRope, quote)
+import qualified Data.Text as T (replace)
 import Seneschal (parallel)
 import Prelude (IO, Maybe (..), fmap, ($), (<>))
 
@@ -44,7 +45,7 @@ main = do
                 , Option
                     "replace-str"
                     (Just 'I')
-                    (Value "'{}'")
+                    (Value "{}")
                     [quote|
        String to use as the find-and-replace target in the stdin input or prefix value.
        |]
@@ -57,16 +58,32 @@ parameterToRope param = case param of
     Value p -> intoRope p
     Empty -> emptyRope
 
+-- This is really ugly, and I can't even imagine the runtime cost I'm taking on
+-- this, but I was in a hurry and wanted to get something running.
+replace :: Rope -> Rope -> Rope -> Rope
+replace needle replacement haystack = do
+    let needleBS = fromRope needle
+        replacementBS = fromRope replacement
+        haystackBS = fromRope haystack
+     in intoRope $ T.replace needleBS replacementBS haystackBS
+
 program :: Program None ()
 program = do
     params <- getCommandLine
     stdinBytes <- inputEntire stdin
-    let result = lookupKeyValue "prefix" (parameterValuesFrom params)
+    let prefixCheck = lookupKeyValue "prefix" (parameterValuesFrom params)
+        substCheck = lookupKeyValue "replace-str" (parameterValuesFrom params)
         stdinLines = breakLines $ intoRope stdinBytes
-    case result of
+    case prefixCheck of
         Nothing -> do
             parallel stdinLines
         Just prefix -> do
             let prefixRope = parameterToRope prefix
-                stdinPrefixed = fmap (\a -> prefixRope <> " " <> a) stdinLines
-             in parallel stdinPrefixed
+            case substCheck of
+                Nothing -> do
+                    let stdinPrefixed = fmap (\a -> prefixRope <> " " <> a) stdinLines
+                     in parallel stdinPrefixed
+                Just needleParam -> do
+                    let needleRope = parameterToRope needleParam
+                        prefixSubst = fmap (\replacement -> replace needleRope replacement prefixRope) stdinLines
+                     in parallel prefixSubst

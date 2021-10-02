@@ -7,10 +7,9 @@ module Seneschal (
 import Control.Monad (forM)
 import Control.Monad.IO.Class (liftIO)
 import Core.Program (None, Program, forkThread, waitThread, writeR)
-import Core.Text (Rope, Textual (fromRope, intoRope), breakWords)
-import Safe (headMay)
+import Core.Text (Rope, Textual (fromRope, intoRope), breakLines)
 import System.Process (readProcess)
-import Prelude (Maybe (..), Traversable, fmap, mapM_, return, tail, ($), (<$>))
+import Prelude (Traversable, fmap, mapM_, ($), (<$>), (<>))
 
 forkThreadsAndWait :: Traversable f => (f a) -> (a -> Program t b) -> Program t (f b)
 forkThreadsAndWait things action = do
@@ -24,21 +23,7 @@ parallel cmds = do
 
 parallelCommand :: Rope -> Program None Rope
 parallelCommand cmd =
-  let tokenizeResult = tokenizeString cmd
-      result = case tokenizeResult of
-        Just (binName, args) ->
-          let binNameS = fromRope binName
-              argsS = fmap fromRope args
-           in liftIO $ intoRope <$> readProcess binNameS argsS ""
-        Nothing -> return ""
-   in result
+  let cmdLines = breakLines cmd
+      cmdStrs = fmap fromRope cmdLines
+   in liftIO $ intoRope <$> readProcess "bash" (["-c"] <> cmdStrs) ""
 
-tokenizeString :: Rope -> Maybe (Rope, [Rope])
-tokenizeString cmd =
-  let cmdList = breakWords cmd
-      binNameM = headMay cmdList
-      args = tail cmdList
-      result = case binNameM of
-        Just a -> Just (a, args)
-        Nothing -> Nothing
-   in result
