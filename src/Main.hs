@@ -61,13 +61,13 @@ parameterToRope param = case param of
 program :: Program None ()
 program = do
     params <- getCommandLine
+    stdinBytes <- inputEntire stdin
     let result = lookupKeyValue "prefix" (parameterValuesFrom params)
+        stdinLines = breakLines $ intoRope stdinBytes
     case result of
         Nothing -> do
-            write "Beginning Super Awesome Test Suite\n"
-            parallel ["echo 'Hello!'", "seq 1 10", "pwd", "ping -c 5 gog.com"]
+            parallel stdinLines
         Just prefix -> do
-            stdinBytes <- inputEntire stdin
             let prefixRope = parameterToRope prefix
-                stdinPrefixed = fmap (\a -> prefixRope <> " " <> a) $ breakLines $ intoRope stdinBytes
+                stdinPrefixed = fmap (\a -> prefixRope <> " " <> a) stdinLines
              in parallel stdinPrefixed
