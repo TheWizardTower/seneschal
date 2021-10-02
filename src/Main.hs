@@ -18,7 +18,6 @@ import Core.Program (
     inputEntire,
     parameterValuesFrom,
     simpleConfig,
-    write,
  )
 import Core.System (stdin)
 import Core.Text (Rope, breakLines, emptyRope, intoRope, quote)
