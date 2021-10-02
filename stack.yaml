@@ -3,3 +3,9 @@ resolver: lts-18.12
 packages:
  - .
 
+extra-deps:
+ - github: aesiniath/unbeliever
+   commit: HEAD
+   subdirs:
+    - core-program
+    - core-text
