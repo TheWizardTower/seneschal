@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Seneschal (
-  runShellCommandInParallel,
+  parallel,
 ) where
 
 import Control.Concurrent.Async (mapConcurrently)
@@ -13,8 +13,8 @@ import Core.Text.Utilities (breakWords)
 import Safe (headMay)
 import System.Process (readProcess)
 
-runShellCommandInParallel :: [Rope] -> Program None ()
-runShellCommandInParallel cmds = do
+parallel :: [Rope] -> Program None ()
+parallel cmds = do
   -- It'd be nice if I had a `core-program` native implementation of
   -- mapConcurrently. There probably is one, I just don't know about it.
   outputs <- liftIO $ mapConcurrently parallelCommand cmds
