@@ -76,6 +76,7 @@ replace needle replacement haystack = do
         haystackBS = fromRope haystack
      in intoRope $ T.replace needleBS replacementBS haystackBS
 
+-- Man, this is getting real indent-of-doom-like, which makes me sad.
 program :: Program None ()
 program = do
     params <- getCommandLine

@@ -25,5 +25,8 @@ parallelCommand :: Rope -> Program None Rope
 parallelCommand cmd =
   let cmdLines = breakLines cmd
       cmdStrs = fmap fromRope cmdLines
+      -- This is great, and it _almost_ works right, but it still kinda doesn't.
+      -- `stdout` is great, outputs are not trampled, but `stderr` comes out
+      -- live, which isn't great
    in liftIO $ intoRope <$> readProcess "bash" (["-c"] <> cmdStrs) ""
 
