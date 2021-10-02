@@ -6,6 +6,7 @@ module Main where
 
 import Core.Data (lookupKeyValue)
 import Core.Program (
+    Config,
     None (..),
     Options (..),
     ParameterValue (..),
@@ -28,29 +29,37 @@ import Prelude (IO, Maybe (..), fmap, ($), (<>))
 version :: Version
 version = $(fromPackage)
 
+myConfig :: Config
+myConfig =
+    simpleConfig
+        [ Option
+            "prefix"
+            (Just 'p')
+            (Value "")
+            [quote|
+        Specify a command prefix to, well, prefix to the input fed in via stdin.
+        |]
+        , Option
+            "replace-str"
+            (Just 'I')
+            -- Sadly, when you run `lookupKeyValue "replace-str", this
+            -- default value gets completely ignored. :(
+            -- TODO: write a function that returns the default value
+            --       when the caller does to specify a --replace-str/-I
+            --       value
+            (Value "{}")
+            [quote|
+       String to use as the find-and-replace target in the stdin input or prefix value.
+       |]
+        ]
+
 main :: IO ()
 main = do
     context <-
         configure
             version
             None
-            ( simpleConfig
-                [ Option
-                    "prefix"
-                    (Just 'p')
-                    (Value "")
-                    [quote|
-        Specify a command prefix to, well, prefix to the input fed in via stdin.
-        |]
-                , Option
-                    "replace-str"
-                    (Just 'I')
-                    (Value "{}")
-                    [quote|
-       String to use as the find-and-replace target in the stdin input or prefix value.
-       |]
-                ]
-            )
+            myConfig
     executeWith context program
 
 parameterToRope :: ParameterValue -> Rope
