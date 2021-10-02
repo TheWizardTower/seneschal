@@ -1,2 +1,4 @@
 
 .stack-work
+seneschal.cabal
+stack.yaml.lock
