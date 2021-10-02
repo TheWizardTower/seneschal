@@ -6,11 +6,11 @@ module Seneschal (
 
 import Control.Monad (forM)
 import Control.Monad.IO.Class (liftIO)
-import Core.Program (None, Program, writeR, forkThread, waitThread)
+import Core.Program (None, Program, forkThread, waitThread, writeR)
 import Core.Text (Rope, Textual (fromRope, intoRope), breakWords)
 import Safe (headMay)
 import System.Process (readProcess)
-import Prelude (Traversable, Maybe (..), fmap, mapM_, return, tail, ($), (<$>))
+import Prelude (Maybe (..), Traversable, fmap, mapM_, return, tail, ($), (<$>))
 
 forkThreadsAndWait :: Traversable f => (f a) -> (a -> Program t b) -> Program t (f b)
 forkThreadsAndWait things action = do
