@@ -4,30 +4,32 @@ module Seneschal (
   parallel,
 ) where
 
-import Control.Concurrent.Async (mapConcurrently)
+import Control.Monad (forM)
 import Control.Monad.IO.Class (liftIO)
-import Core.Program (writeR)
-import Core.Program.Execute (None, Program)
-import Core.Text.Rope (Rope, Textual (fromRope, intoRope))
-import Core.Text.Utilities (breakWords)
+import Core.Program (None, Program, writeR, forkThread, waitThread)
+import Core.Text (Rope, Textual (fromRope, intoRope), breakWords)
 import Safe (headMay)
 import System.Process (readProcess)
+import Prelude (Traversable, Maybe (..), fmap, mapM_, return, tail, ($), (<$>))
+
+forkThreadsAndWait :: Traversable f => (f a) -> (a -> Program t b) -> Program t (f b)
+forkThreadsAndWait things action = do
+  threads <- forM things $ \thing -> forkThread (action thing)
+  forM threads waitThread
 
 parallel :: [Rope] -> Program None ()
 parallel cmds = do
-  -- It'd be nice if I had a `core-program` native implementation of
-  -- mapConcurrently. There probably is one, I just don't know about it.
-  outputs <- liftIO $ mapConcurrently parallelCommand cmds
+  outputs <- forkThreadsAndWait cmds parallelCommand
   mapM_ writeR outputs
 
-parallelCommand :: Rope -> IO Rope
+parallelCommand :: Rope -> Program None Rope
 parallelCommand cmd =
   let tokenizeResult = tokenizeString cmd
       result = case tokenizeResult of
         Just (binName, args) ->
           let binNameS = fromRope binName
               argsS = fmap fromRope args
-           in intoRope <$> readProcess binNameS argsS ""
+           in liftIO $ intoRope <$> readProcess binNameS argsS ""
         Nothing -> return ""
    in result
 
