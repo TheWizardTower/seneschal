@@ -7,6 +7,6 @@ main :: IO ()
 main = do
     putStrLn "Beginning"
     putStrLn ""
-    runShellCommandInParallel ["echo 'Hello!'", "seq 1 10", "pwd"]
+    runShellCommandInParallel ["echo 'Hello!'", "seq 1 10", "pwd", "ping -c 5 gog.com"]
 
 
