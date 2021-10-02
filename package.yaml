@@ -28,6 +28,9 @@ github: TheWizardTower/seneschal
 dependencies:
  - base >= 4.11 && < 5
  - async
+ - core-text
+ - core-data
+ - core-program
  - process
  - safe
 
