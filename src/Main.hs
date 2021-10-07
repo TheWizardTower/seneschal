@@ -22,9 +22,10 @@ import Core.Program (
  )
 import Core.System (stdin)
 import Core.Text (Rope, breakLines, emptyRope, fromRope, intoRope, quote)
+import Data.Functor ((<&>))
 import qualified Data.Text as T (replace)
 import Seneschal (parallel)
-import Prelude (IO, Maybe (..), fmap, ($), (<>))
+import Prelude (IO, Maybe (..), ($), (<$>), (<>))
 
 version :: Version
 version = $(fromPackage)
@@ -81,19 +82,11 @@ program :: Program None ()
 program = do
     params <- getCommandLine
     stdinBytes <- inputEntire stdin
-    let prefixCheck = lookupKeyValue "prefix" (parameterValuesFrom params)
-        substCheck = lookupKeyValue "replace-str" (parameterValuesFrom params)
+    let hasValue v = parameterToRope <$> lookupKeyValue v (parameterValuesFrom params)
         stdinLines = breakLines $ intoRope stdinBytes
-    case prefixCheck of
-        Nothing -> do
-            parallel stdinLines
-        Just prefix -> do
-            let prefixRope = parameterToRope prefix
-            case substCheck of
-                Nothing -> do
-                    let stdinPrefixed = fmap (\a -> prefixRope <> " " <> a) stdinLines
-                     in parallel stdinPrefixed
-                Just needleParam -> do
-                    let needleRope = parameterToRope needleParam
-                        prefixSubst = fmap (\replacement -> replace needleRope replacement prefixRope) stdinLines
-                     in parallel prefixSubst
+     in parallel $
+            stdinLines <&> \line ->
+                case (hasValue "prefix", hasValue "replace-str") of
+                    (Just prefix, Nothing) -> prefix <> " " <> line
+                    (Just prefix, Just needle) -> replace needle line prefix
+                    (_, _) -> line
