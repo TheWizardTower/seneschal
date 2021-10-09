@@ -8,10 +8,9 @@ import Control.Monad (forM)
 import Control.Monad.IO.Class (liftIO)
 import Core.Program (None, Program, debugS, forkThread, waitThread, writeR)
 import Core.Text (Rope, Textual (fromRope, intoRope))
-import qualified Data.List as List (intercalate)
 import System.Exit (ExitCode (..))
 import System.Process.Typed (closed, proc, readProcess, setStdin)
-import Prelude (Traversable, fmap, mapM_, return, words, ($), (<>))
+import Prelude (Traversable, fmap, mapM_, return, ($), (<>))
 
 forkThreadsAndWait :: Traversable f => f a -> (a -> Program t b) -> Program t (f b)
 forkThreadsAndWait things action = do
@@ -28,12 +27,11 @@ TODO this could potentially move to the **unbeliever** library
 -- Shamelessly stolen from https://github.com/aesiniath/publish/blob/main/src/Utilities.hs#L41-L61
 execProcess :: Rope -> Program t (ExitCode, Rope, Rope)
 execProcess cmd =
-  let cmdStrs = words $ fromRope cmd
-      task = proc "bash" ("-c" : cmdStrs)
+  let cmdStr = fromRope cmd
+      task = proc "bash" ("-c" : [cmdStr])
       task' = setStdin closed task
-      command = List.intercalate " " ("bash" : "-c" : cmdStrs)
    in do
-        debugS "command" command
+        debugS "command" task'
 
         (exit, out, err) <- liftIO $ do
           readProcess task'
