@@ -4,7 +4,6 @@
 
 module Main where
 
-import Core.Data (lookupKeyValue)
 import Core.Program (
     Config,
     None (..),
@@ -17,7 +16,7 @@ import Core.Program (
     fromPackage,
     getCommandLine,
     inputEntire,
-    parameterValuesFrom,
+    lookupOptionValue,
     simpleConfig,
  )
 import Core.System (stdin)
@@ -25,7 +24,7 @@ import Core.Text (Rope, breakLines, emptyRope, fromRope, intoRope, quote)
 import Data.Functor ((<&>))
 import qualified Data.Text as T (replace)
 import Seneschal (parallel)
-import Prelude (IO, Maybe (..), ($), (<$>), (<>))
+import Prelude (IO, Maybe (..), ($), (<$>), (<>), (==))
 
 version :: Version
 version = $(fromPackage)
@@ -77,16 +76,18 @@ replace needle replacement haystack = do
         haystackBS = fromRope haystack
      in intoRope $ T.replace needleBS replacementBS haystackBS
 
--- Man, this is getting real indent-of-doom-like, which makes me sad.
 program :: Program None ()
 program = do
     params <- getCommandLine
     stdinBytes <- inputEntire stdin
-    let hasValue v = parameterToRope <$> lookupKeyValue v (parameterValuesFrom params)
+    let hasValue v = intoRope <$> lookupOptionValue v params
         stdinLines = breakLines $ intoRope stdinBytes
      in parallel $
             stdinLines <&> \line ->
                 case (hasValue "prefix", hasValue "replace-str") of
-                    (Just prefix, Nothing) -> prefix <> " " <> line
+                    -- It'd be nice if the "{}" value in this case statement
+                    -- came from something more intelligent, like the actual
+                    -- default value.
+                    (Just prefix, Nothing) -> let replLine = replace "{}" line prefix in if replLine == line then prefix <> " " <> line else replLine
                     (Just prefix, Just needle) -> replace needle line prefix
                     (_, _) -> line
