@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Seneschal (
+  hasValue,
   parallel,
 ) where
 
@@ -16,6 +17,9 @@ forkThreadsAndWait :: Traversable f => f a -> (a -> Program t b) -> Program t (f
 forkThreadsAndWait things action = do
   threads <- forM things $ \thing -> forkThread (action thing)
   forM threads waitThread
+
+hasValue :: LongName -> Parameters -> Maybe Rope
+hasValue v params = intoRope <$> lookupOptionValue v params
 
 {-
 Thin wrapper around **typed-process**'s `readProcess` so that the command

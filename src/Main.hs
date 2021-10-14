@@ -16,15 +16,14 @@ import Core.Program (
     fromPackage,
     getCommandLine,
     inputEntire,
-    lookupOptionValue,
     simpleConfig,
  )
 import Core.System (stdin)
 import Core.Text (Rope, breakLines, emptyRope, fromRope, intoRope, quote)
 import Data.Functor ((<&>))
 import qualified Data.Text as T (replace)
-import Seneschal (parallel)
-import Prelude (IO, Maybe (..), ($), (<$>), (<>), (==))
+import Seneschal (hasValue, parallel)
+import Prelude (IO, Maybe (..), ($), (<>), (==))
 
 version :: Version
 version = $(fromPackage)
@@ -80,11 +79,10 @@ program :: Program None ()
 program = do
     params <- getCommandLine
     stdinBytes <- inputEntire stdin
-    let hasValue v = intoRope <$> lookupOptionValue v params
-        stdinLines = breakLines $ intoRope stdinBytes
+    let stdinLines = breakLines $ intoRope stdinBytes
      in parallel $
             stdinLines <&> \line ->
-                case (hasValue "prefix", hasValue "replace-str") of
+                case (hasValue "prefix" params, hasValue "replace-str" params) of
                     -- It'd be nice if the "{}" value in this case statement
                     -- came from something more intelligent, like the actual
                     -- default value.
