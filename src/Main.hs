@@ -41,11 +41,6 @@ myConfig =
         , Option
             "replace-str"
             (Just 'I')
-            -- Sadly, when you run `lookupKeyValue "replace-str", this
-            -- default value gets completely ignored. :(
-            -- TODO: write a function that returns the default value
-            --       when the caller does to specify a --replace-str/-I
-            --       value
             (Value "{}")
             [quote|
        String to use as the find-and-replace target in the stdin input or prefix value.
