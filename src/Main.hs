@@ -45,6 +45,21 @@ myConfig =
             [quote|
        String to use as the find-and-replace target in the stdin input or prefix value.
        |]
+        , Variable
+            "SHELL"
+            [quote|
+            Seneschal uses the $SHELL environment variable to detect what shell
+            to run your commands in. This can be overridden with --shell
+            |]
+        , Option
+            "shell"
+            (Just 'S')
+            Empty
+            [quote|
+           Shell to execute your command (or commands) in. By default, seneschal
+           executes in the shell you're running, or the shell that's calling
+           Seneschal.
+           |]
         ]
 
 main :: IO ()
