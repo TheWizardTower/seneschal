@@ -66,6 +66,8 @@ do
     updateRepo $REPO &
 done
 
+wait
+
 cat $TEMP/*.out
 rm -rf $TEMP
 ```
