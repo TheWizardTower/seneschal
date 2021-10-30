@@ -22,7 +22,7 @@ latte as a reward for a job well done.
 
 Bad news, however: On your way back from the espresso machine at your Sleek(tm)
 Hip(tm) With-It(tm) silicon valley office, the dreaded
-(PHB)[https://en.wikipedia.org/wiki/Pointy-haired_Boss] corners you. Even
+[PHB](https://en.wikipedia.org/wiki/Pointy-haired_Boss) corners you. Even
 worse, he needs to Add Value and Demonstrate Synergistic Brilliance, which
 means he needs to find something both annoying and pointless to sic you on.
 
