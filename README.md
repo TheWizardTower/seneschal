@@ -222,3 +222,10 @@ It's simple, but it should work the way you expect!
 `git clone git@github.com:TheWizardTower/seneschal.git && pushd seneschal && stack install`
 
 (I need to upload it to stackage)
+
+## Acknowledgements
+
+Boundless thanks to @istathar for support as we hammered out the idea, and for
+the excellent [unbeliever](https://github.com/aesiniath/unbeliever) library,
+and @etorreborre for help with refactoring the main function into something
+significantly less indent-of-doom like.
