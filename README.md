@@ -107,7 +107,7 @@ keeping is probably really relaxing, right?
 Enter seneschal.
 
 ```bash
-echo $REPOS | seneschal --prefix="cd {} && git pull
+echo $REPOS | seneschal --prefix="cd {} && git pull"
 ```
 
 The objective of seneschal is to be simple to use, both in scripts and directly
