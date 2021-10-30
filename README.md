@@ -42,6 +42,8 @@ for REPO in $REPOS
 do
     bash -c "cd $REPO && git pull" &
 done
+
+wait
 ```
 
 There we go! It's now done in parallel. You get another latte.
