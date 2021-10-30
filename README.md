@@ -201,6 +201,9 @@ argument list, we specify `{}` in the command string.
 pushd {}; git pull; popd
 ```
 
+(If we need to override the default `{}` value, we can, via the `--prefix`
+flag)
+
 Putting the pieces together, we get:
 
 ```bash
