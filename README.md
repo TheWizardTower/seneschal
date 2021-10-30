@@ -124,6 +124,96 @@ aliases you've defined in your environment.
 In short, it's built to let you get a lot of things done quickly, then get out
 of your way.
 
+## But how does it work?
+
+There are two parts. Part one is the optional `--prefix` command, the other is
+reading from stdin.
+
+A simple way to use seneschal is to just execute a list of commands in parallel.
+
+so:
+
+```bash
+COMMANDS="pwd
+sleep 5 && echo boom
+echo Howdy
+whoami"
+
+echo "$COMMANDS" | seneschal --debug
+```
+
+If you run the above command, the output is:
+
+```bash
+[merlin@DESKTOP-ISNBLMC seneschal]$ bash example.sh
+21:43:38Z (00.001) command =
+Raw command: /bin/bash -c "echo Howdy"
+21:43:38Z (00.001) command =
+
+21:43:38Z (00.001) command =
+Raw command: /bin/bash -c "sleep 5 && echo boom"
+
+21:43:38Z (00.001) command =
+Raw command: /bin/bash -c pwd
+
+<five seconds pass>
+/home/merlin/git/seneschal
+
+boom
+
+Howdy
+
+merlin
+
+
+[merlin@DESKTOP-ISNBLMC seneschal]$
+```
+
+Each line is treated as a separate command. The commands are passed to your
+shell (it reads the `$SHELL` environment variable, but can be overridden via
+the `--shell` argument) in the `bash -c <yourCommand>` format. This is built up
+into a list, executed in parallel, with the stdout and stderr returned in a
+list, corresponding to the same input order.
+
+This is why, despite the second command having a five second sleep, the output
+is still in the same order as the commands.
+
+There's another way to use this command. If you're familiar with `xargs`, this
+will be familiar, and it's the way that was used in the first example.
+
+Say we had a bunch of repos in our `~/git` repo that we wanted to update.
+
+We can get the list via `ls -1`, but this gives us the list of things to
+iterate over, it doesn't help us to build the set of commands, or kick them off
+in parallel.
+
+What we want is:
+
+```
+pushd $inputLine; git pull; popd;
+```
+
+Fortunately, `xargs` gives us a good idiom for this -- the common convention is
+that xargs commands are appended to the end. If we need it elsewhere in the
+argument list, we specify `{}` in the command string.
+
+```
+pushd {}; git pull; popd
+```
+
+Putting the pieces together, we get:
+
+```bash
+ls -1 | seneschal --prefix="pushd {}; git pull; popd;"
+```
+
+Internally, each line of stdin is substituted in for the `{}` value. Each
+resulting command is then fed as an argument to `bash -c` (or whatever shell
+you're running or scripting), executed in parallel, aggregated, and printed out
+to stdout.
+
+It's simple, but it should work the way you expect!
+
 ## How to get it
 
 `git clone git@github.com:TheWizardTower/seneschal.git && pushd seneschal && stack install`
