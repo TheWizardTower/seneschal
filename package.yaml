@@ -26,14 +26,14 @@ ghc-options: -Wall -Wwarn -fwarn-tabs
 github: TheWizardTower/seneschal
 
 dependencies:
- - base >= 4.11 && < 5
  - async
- - core-text
+ - base >= 4.11 && < 5
  - core-data
  - core-program
+ - core-text
  - process
- - typed-process
  - text
+ - typed-process
 
 library:
   source-dirs: lib
