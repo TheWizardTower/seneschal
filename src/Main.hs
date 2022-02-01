@@ -1,29 +1,20 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Main where
 
-import Core.Program (
-    Config,
-    None (..),
-    Options (..),
-    ParameterValue (..),
-    Program,
-    Version (..),
-    configure,
-    executeWith,
-    fromPackage,
-    getCommandLine,
-    inputEntire,
-    simpleConfig,
- )
-import Core.System (stdin)
-import Core.Text (Rope, breakLines, emptyRope, fromRope, intoRope, quote)
-import Data.Functor ((<&>))
-import qualified Data.Text as T (replace)
-import Seneschal (hasValue, parallel)
-import Prelude (IO, Maybe (..), ($), (<>), (==))
+import           Core.Program (Config, None (..), Options (..),
+                               ParameterValue (..), Program, Version (..),
+                               configure, executeWith, fromPackage,
+                               getCommandLine, inputEntire, simpleConfig)
+import           Core.System  (stdin)
+import           Core.Text    (Rope, breakLines, emptyRope, fromRope, intoRope,
+                               quote)
+import           Data.Functor ((<&>))
+import qualified Data.Text    as T (replace)
+import           Prelude      (IO, Maybe (..), ($), (<>), (==))
+import           Seneschal    (hasValue, parallel)
 
 version :: Version
 version = $(fromPackage)
@@ -74,7 +65,7 @@ main = do
 parameterToRope :: ParameterValue -> Rope
 parameterToRope param = case param of
     Value p -> intoRope p
-    Empty -> emptyRope
+    Empty   -> emptyRope
 
 -- This is really ugly, and I can't even imagine the runtime cost I'm taking on
 -- this, but I was in a hurry and wanted to get something running.
