@@ -1,12 +1,9 @@
-resolver: lts-18.12
+resolver: lts-18.25
 
 packages:
   - .
 
 extra-deps:
-  - github: aesiniath/unbeliever
-    commit: HEAD
-    subdirs:
-      - core-data
-      - core-program
-      - core-text
+  - core-text-0.3.5.0
+  - core-data-0.3.1.1
+  - core-program-0.4.4.0
