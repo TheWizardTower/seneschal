@@ -19,7 +19,7 @@ license: MIT
 license-file: LICENSE
 author: Adam McCullough <merlinfmct87@gmail.com>
 maintainer: Adam McCullough <merlinfmct87@gmail.com>
-copyright: © 2021
+copyright: © 2021-2022 Adam McCullough and Others
 tested-with: GHC == 8.10.5
 category: System
 ghc-options: -Wall -Wwarn -fwarn-tabs
