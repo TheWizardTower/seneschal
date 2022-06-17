@@ -6,18 +6,22 @@ module Main where
 
 import Core.Program (
     Config,
-    Options (..),
     None (..),
+    Options (..),
     ParameterValue (..),
     Program,
     Version (..),
     configure,
+    critical,
     executeWith,
     fromPackage,
     inputEntire,
+    queryOptionValue,
     simpleConfig,
+    terminate,
  )
 import Core.System (stdin)
+import Core.Telemetry
 import Core.Text (
     Rope,
     breakLines,
@@ -26,9 +30,12 @@ import Core.Text (
     intoRope,
     quote,
  )
+import Data.Aeson (decode)
 import Data.Functor ((<&>))
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (replace)
 import Seneschal (hasValue, parallel)
+import TraceSpanData
 import Prelude (IO, Maybe (..), ($), (<>), (==))
 
 version :: Version
@@ -66,6 +73,8 @@ myConfig =
            executes in the shell you're running, or the shell that's calling
            Seneschal.
            |]
+        , Variable "HONEYCOMB_TOKEN" [quote|Honeycomb Token to use when sending telemetry up.|]
+        , Variable "TRACE_SPAN_DATA" [quote|JSON Blob for the trace span data value|]
         ]
 
 main :: IO ()
@@ -75,7 +84,8 @@ main = do
             version
             None
             myConfig
-    executeWith context program
+    context' <- initializeTelemetry [consoleExporter, structuredExporter, honeycombExporter] context
+    executeWith context' program
 
 parameterToRope :: ParameterValue -> Rope
 parameterToRope param = case param of
@@ -90,6 +100,26 @@ replace needle replacement haystack = do
         replacementBS = fromRope replacement
         haystackBS = fromRope haystack
      in intoRope $ T.replace needleBS replacementBS haystackBS
+
+startTelem :: Program None ()
+startTelem = do
+    tsdOption <- queryOptionValue "TRACE_SPAN_DATA"
+    case tsdOption of
+        Nothing -> do
+            beginTrace $
+                encloseSpan "seneschal" program
+        Just tsdJson ->
+            do
+                let decodedTSD :: Maybe TraceSpanData
+                    decodedTSD = decode $ fromRope tsdJson
+                    tsdConcrete = fromMaybe emptyTSD decodedTSD
+                    tidMaybe = traceID tsdConcrete
+                 in do
+                    case tidMaybe of
+                        Nothing -> do
+                            critical "No Trace ID found."
+                            terminate 127
+                        Just tid -> usingTrace' tid program
 
 program :: Program None ()
 program = do
