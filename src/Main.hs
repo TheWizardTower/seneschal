@@ -1,20 +1,35 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Main where
 
-import           Core.Program (Config, None (..), Options (..),
-                               ParameterValue (..), Program, Version (..),
-                               configure, executeWith, fromPackage,
-                               getCommandLine, inputEntire, simpleConfig)
-import           Core.System  (stdin)
-import           Core.Text    (Rope, breakLines, emptyRope, fromRope, intoRope,
-                               quote)
-import           Data.Functor ((<&>))
-import qualified Data.Text    as T (replace)
-import           Prelude      (IO, Maybe (..), ($), (<>), (==))
-import           Seneschal    (hasValue, parallel)
+import Core.Program (
+    Config,
+    Options (..),
+    None (..),
+    ParameterValue (..),
+    Program,
+    Version (..),
+    configure,
+    executeWith,
+    fromPackage,
+    inputEntire,
+    simpleConfig,
+ )
+import Core.System (stdin)
+import Core.Text (
+    Rope,
+    breakLines,
+    emptyRope,
+    fromRope,
+    intoRope,
+    quote,
+ )
+import Data.Functor ((<&>))
+import qualified Data.Text as T (replace)
+import Seneschal (hasValue, parallel)
+import Prelude (IO, Maybe (..), ($), (<>), (==))
 
 version :: Version
 version = $(fromPackage)
@@ -65,7 +80,7 @@ main = do
 parameterToRope :: ParameterValue -> Rope
 parameterToRope param = case param of
     Value p -> intoRope p
-    Empty   -> emptyRope
+    Empty -> emptyRope
 
 -- This is really ugly, and I can't even imagine the runtime cost I'm taking on
 -- this, but I was in a hurry and wanted to get something running.
@@ -78,12 +93,13 @@ replace needle replacement haystack = do
 
 program :: Program None ()
 program = do
-    params <- getCommandLine
     stdinBytes <- inputEntire stdin
+    prefixOpt <- hasValue "prefix"
+    replaceStrOpt <- hasValue "replace-str"
     let stdinLines = breakLines $ intoRope stdinBytes
      in parallel $
             stdinLines <&> \line ->
-                case (hasValue "prefix" params, hasValue "replace-str" params) of
+                case (prefixOpt, replaceStrOpt) of
                     -- It'd be nice if the "{}" value in this case statement
                     -- came from something more intelligent, like the actual
                     -- default value.
