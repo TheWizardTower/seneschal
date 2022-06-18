@@ -18,8 +18,11 @@ import Core.Program (
     waitThread,
     writeR,
  )
+import Core.Telemetry (encloseSpan)
 import Core.Text (Rope, Textual (fromRope, intoRope))
+import Data.Maybe (fromMaybe)
 import GHC.IO (FilePath)
+import Safe (headMay)
 import System.Exit (ExitCode (..))
 import System.Process.Typed (closed, proc, readProcess, setStdin)
 import Prelude (
@@ -27,8 +30,9 @@ import Prelude (
     Traversable,
     fmap,
     mapM_,
-    return,
     pure,
+    return,
+    words,
     ($),
     (<$>),
     (<>),
@@ -36,8 +40,9 @@ import Prelude (
 
 forkThreadsAndWait :: Traversable f => f a -> (a -> Program t b) -> Program t (f b)
 forkThreadsAndWait things action = do
-    threads <- forM things $ \thing -> forkThread (action thing)
-    forM threads waitThread
+    encloseSpan "Fan out" $ do
+        threads <- forM things $ \thing -> forkThread (action thing)
+        forM threads waitThread
 
 hasValue :: LongName -> Program t (Maybe Rope)
 hasValue v = do
@@ -57,6 +62,7 @@ execProcess cmd = do
     shEnv <- queryEnvironmentValue "SHELL"
     shOpt <- hasValue "shell"
     let cmdStr = fromRope cmd
+        cmdBinName = intoRope $ fromMaybe "" $ headMay $ words $ fromRope cmd
         shell :: FilePath
         shell = fromRope $ case (shOpt, shEnv) of
             (Nothing, Nothing) -> "bash"
@@ -67,12 +73,14 @@ execProcess cmd = do
         task = proc shell ("-c" : [cmdStr])
         task' = setStdin closed task
      in do
-            debugS "command" task'
-            (exit, out, err) <- liftIO $ readProcess task'
-            return (exit, intoRope out, intoRope err)
+            encloseSpan ("Exec Process " <> cmdBinName) $ do
+                debugS "command" task'
+                (exit, out, err) <- liftIO $ readProcess task'
+                return (exit, intoRope out, intoRope err)
 
 parallel :: [Rope] -> Program None ()
 parallel cmds = do
-    outputs <- forkThreadsAndWait cmds execProcess
-    let outputsOuts = fmap (\(_exitCode, out, err) -> out <> "\n" <> err) outputs
-     in mapM_ writeR outputsOuts
+    encloseSpan "parallel" $ do
+        outputs <- forkThreadsAndWait cmds execProcess
+        let outputsOuts = fmap (\(_exitCode, out, err) -> out <> "\n" <> err) outputs
+         in mapM_ writeR outputsOuts

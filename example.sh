@@ -6,4 +6,4 @@ sleep 5 && echo boom
 echo Howdy
 whoami"
 
-echo "$COMMAND" | seneschal --debug
+echo "$COMMAND" | seneschal --debug --telemetry=console

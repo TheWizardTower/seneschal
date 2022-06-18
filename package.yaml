@@ -35,6 +35,7 @@ dependencies:
  - core-telemetry
  - core-text
  - process
+ - safe
  - terminal-progress-bar
  - text
  - typed-process

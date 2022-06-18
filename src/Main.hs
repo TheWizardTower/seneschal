@@ -115,11 +115,11 @@ startTelem = do
                     tsdConcrete = fromMaybe emptyTSD decodedTSD
                     tidMaybe = traceID tsdConcrete
                  in do
-                    case tidMaybe of
-                        Nothing -> do
-                            critical "No Trace ID found."
-                            terminate 127
-                        Just tid -> usingTrace' tid program
+                        case tidMaybe of
+                            Nothing -> do
+                                critical "No Trace ID found."
+                                terminate 127
+                            Just tid -> usingTrace' tid program
 
 program :: Program None ()
 program = do
