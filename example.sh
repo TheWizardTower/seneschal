@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-COMMAND="pwd
-sleep 5 && echo boom
-echo Howdy
+COMMAND="echo Howdy
+pwd
+sleep 1 && echo Almost
+sleep 2 && echo There
+sleep 3 && echo Just
+sleep 4 && echo A
+sleep 5 && echo Little Further
 whoami"
 
-echo "$COMMAND" | seneschal --debug --telemetry=console
+echo "$COMMAND" | seneschal --telemetry=honeycomb --dataset=seneschal
