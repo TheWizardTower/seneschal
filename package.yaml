@@ -26,12 +26,17 @@ ghc-options: -Wall -Wwarn -fwarn-tabs
 github: TheWizardTower/seneschal
 
 dependencies:
- - async
  - base >= 4.11 && < 5
+ - aeson
+ - async
+ - chronologique
  - core-data
  - core-program
+ - core-telemetry
  - core-text
+ - extra
  - process
+ - safe
  - terminal-progress-bar
  - text
  - typed-process

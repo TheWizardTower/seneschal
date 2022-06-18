@@ -10,4 +10,4 @@ sleep 4 && echo A
 sleep 5 && echo Little Further
 whoami"
 
-echo "$COMMAND" | seneschal
+echo "$COMMAND" | seneschal --telemetry=honeycomb --dataset=seneschal
