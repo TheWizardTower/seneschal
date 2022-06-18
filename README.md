@@ -217,6 +217,16 @@ to stdout.
 
 It's simple, but it should work the way you expect!
 
+
+## Telemetry
+
+as an extra bonus, if you run the honeycomb example script, you should get something like this:
+
+![Honeycomb trace](honeycomb.png)
+
+You'll have to set the `HONEYCOMB_TEAM` environment variable to an API key, but
+this should help a lot with instrumenting things you're doing in the wild.
+
 ## How to get it
 
 `git clone git@github.com:TheWizardTower/seneschal.git && pushd seneschal && stack install`

@@ -78,22 +78,22 @@ execProcess pb cmd = do
      in do
             encloseSpan ("Exec Process " <> cmdBinName) $ do
                 debugS "command" task'
-            (exit, out, err) <- liftIO $ do
-                result <- readProcess task'
-                incProgress pb 1
-                pure result
-            debugS "Finished command" task'
-            return (exit, intoRope out, intoRope err)
+                (exit, out, err) <- liftIO $ do
+                    result <- readProcess task'
+                    incProgress pb 1
+                    pure result
+                debugS "Finished command" task'
+                return (exit, intoRope out, intoRope err)
 
 mungeOutput :: Rope -> Rope -> Rope
-mungeOutput stdout stderr = 
+mungeOutput stdout stderr =
     let stdoutTrimmed = intoRope $ trim $ fromRope stdout
         stderrTrimmed = intoRope $ trim $ fromRope stderr
      in case (widthRope stdoutTrimmed, widthRope stderrTrimmed) of
-    (0, 0) -> ""
-    (_, 0) -> stdoutTrimmed
-    (0, _) -> stderrTrimmed
-    (_, _) -> stdoutTrimmed <> "\n" <> stderrTrimmed
+            (0, 0) -> ""
+            (_, 0) -> stdoutTrimmed
+            (0, _) -> stderrTrimmed
+            (_, _) -> stdoutTrimmed <> "\n" <> stderrTrimmed
 
 parallel :: [Rope] -> Program None ()
 parallel cmds = do
