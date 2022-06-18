@@ -13,6 +13,7 @@ import Core.Program (
     Version (..),
     configure,
     critical,
+    debug,
     executeWith,
     fromPackage,
     inputEntire,
@@ -36,7 +37,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T (replace)
 import Seneschal (hasValue, parallel)
 import TraceSpanData
-import Prelude (IO, Maybe (..), ($), (<>), (==))
+import Prelude (IO, Maybe (..), show, ($), (<>), (==))
 
 version :: Version
 version = $(fromPackage)
@@ -73,7 +74,6 @@ myConfig =
            executes in the shell you're running, or the shell that's calling
            Seneschal.
            |]
-        , Variable "HONEYCOMB_TOKEN" [quote|Honeycomb Token to use when sending telemetry up.|]
         , Variable "TRACE_SPAN_DATA" [quote|JSON Blob for the trace span data value|]
         ]
 
@@ -85,7 +85,7 @@ main = do
             None
             myConfig
     context' <- initializeTelemetry [consoleExporter, structuredExporter, honeycombExporter] context
-    executeWith context' program
+    executeWith context' startTelem
 
 parameterToRope :: ParameterValue -> Rope
 parameterToRope param = case param of
@@ -106,10 +106,12 @@ startTelem = do
     tsdOption <- queryOptionValue "TRACE_SPAN_DATA"
     case tsdOption of
         Nothing -> do
+            debug "No trace span data, beginning new trace" ""
             beginTrace $
                 encloseSpan "seneschal" program
         Just tsdJson ->
             do
+                debug "Found TSD, attempting to decode" tsdJson
                 let decodedTSD :: Maybe TraceSpanData
                     decodedTSD = decode $ fromRope tsdJson
                     tsdConcrete = fromMaybe emptyTSD decodedTSD
@@ -117,9 +119,11 @@ startTelem = do
                  in do
                         case tidMaybe of
                             Nothing -> do
-                                critical "No Trace ID found."
+                                critical "Found trace span data, but was unable to extract trace ID, aborting."
                                 terminate 127
-                            Just tid -> usingTrace' tid program
+                            Just tid -> do
+                                debug "Beginning trace using tid " (intoRope $ show tid)
+                                usingTrace' tid program
 
 program :: Program None ()
 program = do
